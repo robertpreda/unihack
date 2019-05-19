@@ -16,7 +16,7 @@ def write_to_file(index, matrix):
 
 
 def euclidian_distance(x1, y1,x2,y2):
-	return sqrt((x1-x2)**2 - (y1-y2)**2)
+	return sqrt((x1-x2)**2 + (y1-y2)**2)
 
 # returns true if two rectangles overlap
 def overlaps(x1,y1,w1,h1,x2,y2,w2,h2):
@@ -46,20 +46,28 @@ def find_parking_place(image):
 
 def main():
 	cap = cv2.VideoCapture(0)
+	car_cascade = cv2.CascadeClassifier('cars.xml')
 	img_count = 5
+	w,h = 40, 40
+	w_car, h_car = 100,100
 	while 1:
 		ret, img = cap.read()
-		grayscale_img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-		gauss_grayscale_img = cv2.GaussianBlur(src=grayscale_img, ksize=(5, 5), sigmaX=0)
-		edges_img = cv2.Canny(image=gauss_grayscale_img, threshold1=50, threshold2=150, apertureSize=3)
-		sliced_edges_img = edges_img[240:480, 0:640]
-		pair = find_parking_place(sliced_edges_img)
-		try:
-			cv2.line(sliced_edges_img,(pair[0],pair[1]),(pair[2],pair[3]),(255,255,255),3)
-		except:
-			pass
-		# print("p1.x =  ", pair[0], ' p1.y = ', pair[1], ' p2.x = ', pair[2], ' p2.y = ', pair[3])
-		cv2.imshow('cacat', sliced_edges_img)
+		grayscale = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+		grayscale_slice = grayscale[0:480, 0:320]
+		cars = car_cascade.detectMultiScale(grayscale,1.1,3)
+		circles = cv2.HoughCircles(grayscale_slice, cv2.HOUGH_GRADIENT, 1,20,
+			param1 = 50, param2 = 30, minRadius = 10, maxRadius = 30)
+		if circles is not None:
+			for (x_car,y_car,_,_),i in zip(cars,circles[0,:]):
+				cv2.rectangle(img, (x_car,y_car),(x_car+w_car,y_car+h_car),(0,255,0),2) # green --> cars
+				cv2.rectangle(img, (int(i[0]) - int(w/2), int(i[1])-int(h/2)), (int(i[0]) + int(w/2), int(i[1]) + int(h/2)),(0,0,255),2) # red --> circle
+				if overlaps(x_car,y_car,w,h,int(i[0]),int(i[1]),w_car,h_car) == True:
+					print("Overlap")
+		else:
+			for (x,y,w,h) in cars:
+				cv2.rectangle(img, (x,y),(x+w,y+h),(0,255,0),2)
+		cv2.imshow('Image',img)
+		# escape key
 		k = cv2.waitKey(30) & 0xff
 
 		if k == 27:
