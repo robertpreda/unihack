@@ -1,7 +1,8 @@
 import cv2
 from math import sqrt
-from math import pow
 
+
+# redundant, no use anymore, keeping it because well, better safe than sorry
 def write_to_file(index, matrix):
 	filename = 'matrix' + str(index) + '.txt'
 	f = open(filename, 'w')
@@ -16,6 +17,17 @@ def write_to_file(index, matrix):
 
 def euclidian_distance(x1, y1,x2,y2):
 	return sqrt((x1-x2)**2 - (y1-y2)**2)
+
+# returns true if two rectangles overlap
+def overlaps(x1,y1,w1,h1,x2,y2,w2,h2):
+	center1 = (x1 + w1/2,y1 + h1/2)
+	center2 = (x2 + w2/2, y2 + h2/2)
+	distance = euclidian_distance(center1[0],center1[1],center2[0],center2[1])
+	if distance <= w1/2 + w2/2:
+		return True
+	else:
+		return False
+
 
 def find_parking_place(image):
 	height, width = image.shape[:2]
