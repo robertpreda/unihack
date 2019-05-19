@@ -23,7 +23,7 @@ while(True):
 	#480 640
     # Crop the image
 
-    crop_img = frame[90:150, 0:90]
+    crop_img = frame
 
  
 
